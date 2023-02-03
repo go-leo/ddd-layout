@@ -11,3 +11,8 @@ func CreateXXX() *XXXVo {
 		F3: "3",
 	}
 }
+
+func FindXXXEntity() *XXXEntity {
+	// TODO fild xxx from repository
+	return &XXXEntity{}
+}
