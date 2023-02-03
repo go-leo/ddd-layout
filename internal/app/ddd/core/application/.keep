@@ -12,3 +12,11 @@
 命令处理程序有两种不同使用方式：
 1. 它们可以包含执行用例的实际逻辑；
 2. 它们可以仅仅作为我们应用中的连接片段，接收命令然后简单地触发应用服务中的逻辑。
+
+命令规范
+规范                         用途                            解释
+xxxCmd	                CQRS Command	        Cmd代表命令，CQRS中一个命令请求
+xxxQuery	            CQRS Query	            Query代表查询，CQRS中一个查询请求
+xxxCmdHandler	        CQRS Command Handler	Cmd代表命令处理器，处理命令请求
+xxxQueryHandler	        CQRS Query Handler	    Cmd代表查询处理器，处理命令请求
+xxxService	            application service	    应用服务名

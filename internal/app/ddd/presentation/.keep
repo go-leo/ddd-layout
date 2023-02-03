@@ -5,3 +5,15 @@
 这一层包含所有与其他系统交互的东西，比如web服务、RPC接口以及命令行控制台等。
 它处理请求数据的解析、验证和转换。
 它处理响应数据的序列化。
+
+命令规范
+规范                         用途                            解释
+xxxAppPort	                application port	            应用端口
+xxxResAdapter	            restful resource adapter	    restful风格资源服务适配器
+xxxCtrlAdapter	            view controller adapter	        视图控制器服务适配器
+xxxProvAdapter	            RPC service provider adapter	RPC服务提供者适配器
+xxxCliAdapter	            command line console adapter	命令行控制台适配器
+assembler.FromXXXDto(req)	convert dto to model	        将req转成应用核心内部对象
+assembler.ToXXXDto(model)	convert model to dto	        将应用内部对象转成resp
+Commands	                command bus	                    命令总线
+Queries	                    query bus	                    查询总线

@@ -1,5 +1,17 @@
 基础设施层
 
-从适配器
+从适配器（被动适配器）
+
+支持上述三个层次的技术能力，例如，持久化或者消息机制。
 
 基础设施由独立于应用程序的所有内容组成:外部库、数据库引擎、应用程序服务器、消息传递后端等等。
+
+命令规范
+规范                         用途                            解释
+xxxCliPort	              client port	            RPC或者HTTP客户端请求端口（接口）
+xxxCliAdapter	          client adapter	        RPC或者HTTP客户端请求适配器（端口的实现类）
+xxxPubPort	              publisher port	        消息中间件发布者端口（接口）
+xxxPubAdapter	          publisher adapter	        消息中间件发布者适配器（端口的实现类）
+xxxRepoPort	              repository port	        存储仓库端口（接口）
+xxxRepoAdapter	          repository adapter	    存储仓库适配器（端口的实现类）
+
