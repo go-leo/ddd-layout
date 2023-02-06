@@ -1,4 +1,4 @@
-package xxx
+package subdomain
 
 // 值对象
 import (

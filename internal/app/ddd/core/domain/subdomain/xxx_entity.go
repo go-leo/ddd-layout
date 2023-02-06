@@ -1,4 +1,4 @@
-package xxx
+package subdomain
 
 import "github.com/go-leo/design-pattern/ddd"
 

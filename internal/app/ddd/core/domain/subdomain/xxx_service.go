@@ -1,4 +1,4 @@
-package xxx
+package subdomain
 
 type XXXService struct {
 	country  string

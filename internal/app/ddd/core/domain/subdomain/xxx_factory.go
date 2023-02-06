@@ -1,4 +1,4 @@
-package xxx
+package subdomain
 
 // 工厂类，负责复杂领域对象创建，封装细节
 type XXXFactory struct {
