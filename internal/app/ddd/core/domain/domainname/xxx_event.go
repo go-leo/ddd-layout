@@ -1,4 +1,4 @@
-package subdomain
+package domainname
 
 // 领域事件
 import "github.com/go-leo/design-pattern/ddd"
