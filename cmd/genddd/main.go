@@ -369,12 +369,12 @@ func makeDir(info *packageInfo) error {
 	return nil
 }
 
-var wireFile = `{{if .IsMain }}
+var wireFile = `{{- if .IsMain }}
 //go:build wireinject
 // +build wireinject
 
 // The build tag makes sure the stub is not built in the final build.
-{{end}}
+{{- end}}
 package {{.Package}}
 
 import (
