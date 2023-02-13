@@ -54,27 +54,46 @@ type WireFile struct {
 }
 
 func makeDir(info *packageInfo) error {
-	appName := path.Base(info.appPath)
-	appRootPath := path.Join("internal/app", info.appPath)
-
-	appConfigPath := path.Join("internal/app", info.appPath, "config")
-	appCorePath := path.Join("internal/app", info.appPath, "core")
-	appInfrastructurePath := path.Join("internal/app", info.appPath, "infrastructure")
-	appPresentationPath := path.Join("internal/app", info.appPath, "presentation")
-
-	applicationPath := path.Join("internal/app", info.appPath, "core/application")
-	domainPath := path.Join("internal/app", info.appPath, "core/domain")
-
-	commandPath := path.Join("internal/app", info.appPath, "core/application/command")
-	queryPath := path.Join("internal/app", info.appPath, "core/application/query")
-	servicePath := path.Join("internal/app", info.appPath, "core/application/service")
-
-	internalPath := path.Join("internal/app", info.appPath, "core/domain/internal")
-	domainnamePath := path.Join("internal/app", info.appPath, "core/domain/domainname")
-
 	var wireFiles []*WireFile
+
+	appRootPath := path.Join("internal/app", info.appPath)
+	wireFiles = appendCmd(wireFiles, info, appRootPath)
+	wireFiles = appendApp(wireFiles, info, appRootPath)
+
+	for _, files := range wireFiles {
+		err := os.MkdirAll(files.Path, 0777)
+		if err != nil {
+			return err
+		}
+		tmpl, err := template.New("test").Parse(wireFile)
+		if err != nil {
+			return err
+		}
+		file, err := os.Create(path.Join(files.Path, "wire.go"))
+		if err != nil {
+			return err
+		}
+		buffer := &bytes.Buffer{}
+		err = tmpl.Execute(buffer, files)
+		if err != nil {
+			return err
+		}
+		source, err := format.Source(buffer.Bytes())
+		if err != nil {
+			return err
+		}
+		_, err = file.Write(source)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func appendCmd(wireFiles []*WireFile, info *packageInfo, appRootPath string) []*WireFile {
+	cmdPath := path.Join("cmd", info.appPath)
 	wireFiles = append(wireFiles, &WireFile{
-		Path:    path.Join("cmd", info.appPath),
+		Path:    cmdPath,
 		IsMain:  true,
 		Package: "main",
 		Imports: []string{
@@ -84,44 +103,84 @@ func makeDir(info *packageInfo) error {
 			path.Base(appRootPath),
 		},
 	})
+	return wireFiles
+}
 
+func appendApp(wireFiles []*WireFile, info *packageInfo, appRootPath string) []*WireFile {
+	configPath := path.Join("internal/app", info.appPath, "config")
+	presentationPath := path.Join("internal/app", info.appPath, "presentation")
+	applicationPath := path.Join("internal/app", info.appPath, "application")
+	domainPath := path.Join("internal/app", info.appPath, "domain")
+	infrastructurePath := path.Join("internal/app", info.appPath, "infrastructure")
+	wireFiles = appendRoot(wireFiles, info, appRootPath, configPath, presentationPath, applicationPath, domainPath, infrastructurePath)
+	wireFiles = appendConfig(wireFiles, configPath)
+	wireFiles = appendPresentation(wireFiles, info, presentationPath)
+	wireFiles = appendApplication(wireFiles, info, applicationPath)
+	wireFiles = appendDomain(wireFiles, info, domainPath)
+	wireFiles = appendInfrastructure(wireFiles, info, infrastructurePath)
+	return wireFiles
+}
+
+func appendRoot(wireFiles []*WireFile, info *packageInfo, appRootPath string, configPath string, presentationPath string, applicationPath string, domainPath string, infrastructurePath string) []*WireFile {
+	appName := path.Base(info.appPath)
 	wireFiles = append(wireFiles, &WireFile{
 		Path:    appRootPath,
 		IsMain:  false,
 		Package: appName,
 		Imports: []string{
-			path.Join(info.moduleName, appConfigPath),
-			path.Join(info.moduleName, appCorePath),
-			path.Join(info.moduleName, appInfrastructurePath),
-			path.Join(info.moduleName, appPresentationPath),
-		},
-		Providers: []string{
-			path.Base(appConfigPath),
-			path.Base(appCorePath),
-			path.Base(appInfrastructurePath),
-			path.Base(appPresentationPath),
-		},
-	})
-
-	wireFiles = append(wireFiles, &WireFile{
-		Path:    appConfigPath,
-		IsMain:  false,
-		Package: "config"})
-
-	wireFiles = append(wireFiles, &WireFile{
-		Path:    appCorePath,
-		IsMain:  false,
-		Package: "core",
-		Imports: []string{
+			path.Join(info.moduleName, configPath),
+			path.Join(info.moduleName, presentationPath),
 			path.Join(info.moduleName, applicationPath),
 			path.Join(info.moduleName, domainPath),
+			path.Join(info.moduleName, infrastructurePath),
 		},
 		Providers: []string{
+			path.Base(configPath),
 			path.Base(applicationPath),
 			path.Base(domainPath),
+			path.Base(infrastructurePath),
+			path.Base(presentationPath),
 		},
 	})
+	return wireFiles
+}
 
+func appendDomain(wireFiles []*WireFile, info *packageInfo, domainPath string) []*WireFile {
+	internalPath := path.Join("internal/app", info.appPath, "domain/internal")
+	domainnamePath := path.Join("internal/app", info.appPath, "domain/domainname")
+	wireFiles = append(wireFiles, &WireFile{
+		Path:    domainPath,
+		IsMain:  false,
+		Package: "domain",
+		Imports: []string{
+			path.Join(info.moduleName, internalPath),
+			path.Join(info.moduleName, domainnamePath),
+		},
+		Providers: []string{
+			path.Base(internalPath),
+			path.Base(domainnamePath),
+		},
+	})
+	wireFiles = append(wireFiles, &WireFile{
+		Path:    internalPath,
+		IsMain:  false,
+		Package: "internal"})
+	wireFiles = append(wireFiles, &WireFile{
+		Path:    domainnamePath,
+		IsMain:  false,
+		Package: "domainname"})
+	return wireFiles
+}
+
+func appendConfig(wireFiles []*WireFile, configPath string) []*WireFile {
+	wireFiles = append(wireFiles, &WireFile{Path: configPath, IsMain: false, Package: "config"})
+	return wireFiles
+}
+
+func appendApplication(wireFiles []*WireFile, info *packageInfo, applicationPath string) []*WireFile {
+	commandPath := path.Join("internal/app", info.appPath, "application/command")
+	queryPath := path.Join("internal/app", info.appPath, "application/query")
+	servicePath := path.Join("internal/app", info.appPath, "application/service")
 	wireFiles = append(wireFiles, &WireFile{
 		Path:    applicationPath,
 		IsMain:  false,
@@ -137,21 +196,6 @@ func makeDir(info *packageInfo) error {
 			path.Base(servicePath),
 		},
 	})
-
-	wireFiles = append(wireFiles, &WireFile{
-		Path:    domainPath,
-		IsMain:  false,
-		Package: "domain",
-		Imports: []string{
-			path.Join(info.moduleName, internalPath),
-			path.Join(info.moduleName, domainnamePath),
-		},
-		Providers: []string{
-			path.Base(internalPath),
-			path.Base(domainnamePath),
-		},
-	})
-
 	wireFiles = append(wireFiles, &WireFile{
 		Path:    commandPath,
 		IsMain:  false,
@@ -167,16 +211,10 @@ func makeDir(info *packageInfo) error {
 		IsMain:  false,
 		Package: "service",
 	})
+	return wireFiles
+}
 
-	wireFiles = append(wireFiles, &WireFile{
-		Path:    internalPath,
-		IsMain:  false,
-		Package: "internal"})
-	wireFiles = append(wireFiles, &WireFile{
-		Path:    domainnamePath,
-		IsMain:  false,
-		Package: "domainname"})
-
+func appendInfrastructure(wireFiles []*WireFile, info *packageInfo, appInfrastructurePath string) []*WireFile {
 	adapterPath := path.Join("internal/app", info.appPath, "infrastructure/adapter")
 	portPath := path.Join("internal/app", info.appPath, "infrastructure/port")
 	converterPath := path.Join("internal/app", info.appPath, "infrastructure/converter")
@@ -267,7 +305,10 @@ func makeDir(info *packageInfo) error {
 		Path:    portRepositoryPath,
 		IsMain:  false,
 		Package: "repository"})
+	return wireFiles
+}
 
+func appendPresentation(wireFiles []*WireFile, info *packageInfo, appPresentationPath string) []*WireFile {
 	presentationAdapterPath := path.Join("internal/app", info.appPath, "presentation/adapter")
 	presentationPortPath := path.Join("internal/app", info.appPath, "presentation/port")
 	presentationBus := path.Join("internal/app", info.appPath, "presentation/bus")
@@ -290,39 +331,6 @@ func makeDir(info *packageInfo) error {
 		},
 	})
 
-	wireFiles = appendPresentation(wireFiles, info, presentationAdapterPath, presentationPortPath, presentationAssembler, presentationBus)
-
-	for _, files := range wireFiles {
-		err := os.MkdirAll(files.Path, 0777)
-		if err != nil {
-			return err
-		}
-		tmpl, err := template.New("test").Parse(wireFile)
-		if err != nil {
-			return err
-		}
-		file, err := os.Create(path.Join(files.Path, "wire.go"))
-		if err != nil {
-			return err
-		}
-		buffer := &bytes.Buffer{}
-		err = tmpl.Execute(buffer, files)
-		if err != nil {
-			return err
-		}
-		source, err := format.Source(buffer.Bytes())
-		if err != nil {
-			return err
-		}
-		_, err = file.Write(source)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func appendPresentation(wireFiles []*WireFile, info *packageInfo, presentationAdapterPath string, presentationPortPath string, presentationAssembler string, presentationBus string) []*WireFile {
 	adapterConsole := path.Join("internal/app", info.appPath, "presentation/adapter/console")
 	adapterController := path.Join("internal/app", info.appPath, "presentation/adapter/controller")
 	adapterResource := path.Join("internal/app", info.appPath, "presentation/adapter/resource")
@@ -360,25 +368,6 @@ func appendPresentation(wireFiles []*WireFile, info *packageInfo, presentationAd
 		IsMain:  false,
 		Package: "bus"})
 
-	wireFiles = appendPresentationAdapter(
-		wireFiles,
-		adapterConsole,
-		adapterController,
-		adapterResource,
-		adapterProvider,
-		adapterSubscriber,
-	)
-	return wireFiles
-}
-
-func appendPresentationAdapter(
-	wireFiles []*WireFile,
-	adapterConsole string,
-	adapterController string,
-	adapterResource string,
-	adapterProvider string,
-	adapterSubscriber string,
-) []*WireFile {
 	wireFiles = append(wireFiles, &WireFile{
 		Path:    adapterConsole,
 		IsMain:  false,
