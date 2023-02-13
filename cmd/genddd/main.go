@@ -179,6 +179,7 @@ func makeDir(info *packageInfo) error {
 
 	adapterPath := path.Join("internal/app", info.appPath, "infrastructure/adapter")
 	portPath := path.Join("internal/app", info.appPath, "infrastructure/port")
+	converterPath := path.Join("internal/app", info.appPath, "infrastructure/converter")
 	wireFiles = append(wireFiles, &WireFile{
 		Path:    appInfrastructurePath,
 		IsMain:  false,
@@ -186,11 +187,19 @@ func makeDir(info *packageInfo) error {
 		Imports: []string{
 			path.Join(info.moduleName, adapterPath),
 			path.Join(info.moduleName, portPath),
+			path.Join(info.moduleName, converterPath),
 		},
 		Providers: []string{
 			path.Base(adapterPath),
 			path.Base(portPath),
+			path.Base(converterPath),
 		},
+	})
+
+	wireFiles = append(wireFiles, &WireFile{
+		Path:    converterPath,
+		IsMain:  false,
+		Package: "converter",
 	})
 
 	adapterClientPath := path.Join("internal/app", info.appPath, "infrastructure/adapter/client")
@@ -281,6 +290,39 @@ func makeDir(info *packageInfo) error {
 		},
 	})
 
+	wireFiles = appendPresentation(wireFiles, info, presentationAdapterPath, presentationPortPath, presentationAssembler, presentationBus)
+
+	for _, files := range wireFiles {
+		err := os.MkdirAll(files.Path, 0777)
+		if err != nil {
+			return err
+		}
+		tmpl, err := template.New("test").Parse(wireFile)
+		if err != nil {
+			return err
+		}
+		file, err := os.Create(path.Join(files.Path, "wire.go"))
+		if err != nil {
+			return err
+		}
+		buffer := &bytes.Buffer{}
+		err = tmpl.Execute(buffer, files)
+		if err != nil {
+			return err
+		}
+		source, err := format.Source(buffer.Bytes())
+		if err != nil {
+			return err
+		}
+		_, err = file.Write(source)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func appendPresentation(wireFiles []*WireFile, info *packageInfo, presentationAdapterPath string, presentationPortPath string, presentationAssembler string, presentationBus string) []*WireFile {
 	adapterConsole := path.Join("internal/app", info.appPath, "presentation/adapter/console")
 	adapterController := path.Join("internal/app", info.appPath, "presentation/adapter/controller")
 	adapterResource := path.Join("internal/app", info.appPath, "presentation/adapter/resource")
@@ -318,6 +360,25 @@ func makeDir(info *packageInfo) error {
 		IsMain:  false,
 		Package: "bus"})
 
+	wireFiles = appendPresentationAdapter(
+		wireFiles,
+		adapterConsole,
+		adapterController,
+		adapterResource,
+		adapterProvider,
+		adapterSubscriber,
+	)
+	return wireFiles
+}
+
+func appendPresentationAdapter(
+	wireFiles []*WireFile,
+	adapterConsole string,
+	adapterController string,
+	adapterResource string,
+	adapterProvider string,
+	adapterSubscriber string,
+) []*WireFile {
 	wireFiles = append(wireFiles, &WireFile{
 		Path:    adapterConsole,
 		IsMain:  false,
@@ -338,35 +399,7 @@ func makeDir(info *packageInfo) error {
 		Path:    adapterSubscriber,
 		IsMain:  false,
 		Package: "subscriber"})
-
-	for _, files := range wireFiles {
-		err := os.MkdirAll(files.Path, 0777)
-		if err != nil {
-			return err
-		}
-		tmpl, err := template.New("test").Parse(wireFile)
-		if err != nil {
-			return err
-		}
-		file, err := os.Create(path.Join(files.Path, "wire.go"))
-		if err != nil {
-			return err
-		}
-		buffer := &bytes.Buffer{}
-		err = tmpl.Execute(buffer, files)
-		if err != nil {
-			return err
-		}
-		source, err := format.Source(buffer.Bytes())
-		if err != nil {
-			return err
-		}
-		_, err = file.Write(source)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return wireFiles
 }
 
 var wireFile = `{{- if .IsMain }}
