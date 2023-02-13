@@ -42,9 +42,6 @@ var busContent string
 //go:embed application_wire.go.template
 var applicationContent string
 
-//go:embed domain_wire.go.template
-var domainContent string
-
 //go:embed infrastructure_wire.go.template
 var infrastructureContent string
 
@@ -82,9 +79,7 @@ func main() {
 		newSource(path.Join("internal/app", *appPath, "application", "command"), sampleWireContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "application", "query"), sampleWireContent, "wire.go"),
 
-		newSource(path.Join("internal/app", *appPath, "domain"), domainContent, "wire.go"),
-		newSource(path.Join("internal/app", *appPath, "domain", "subdomainname"), sampleWireContent, "wire.go"),
-		newSource(path.Join("internal/app", *appPath, "domain", "internal"), sampleWireContent, "wire.go"),
+		newSource(path.Join("internal/app", *appPath, "domain"), sampleWireContent, "wire.go"),
 
 		newSource(path.Join("internal/app", *appPath, "infrastructure"), infrastructureContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "infrastructure", "clientadapter"), sampleWireContent, "wire.go"),
