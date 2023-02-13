@@ -1,0 +1,23 @@
+package presentation
+
+import (
+	"github.com/google/wire"
+
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/presentation/assembler"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/presentation/bus"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/presentation/console"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/presentation/controller"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/presentation/provider"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/presentation/resource"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/presentation/subscriber"
+)
+
+var Provider = wire.NewSet(
+	assembler.Provider,
+	bus.Provider,
+	console.Provider,
+	controller.Provider,
+	provider.Provider,
+	resource.Provider,
+	subscriber.Provider,
+)

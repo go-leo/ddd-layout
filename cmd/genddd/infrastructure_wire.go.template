@@ -1,0 +1,23 @@
+package infrastructure
+
+import (
+	"github.com/google/wire"
+
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/infrastructure/clientadapter"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/infrastructure/clientport"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/infrastructure/converter"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/infrastructure/publisheradapter"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/infrastructure/publisherport"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/infrastructure/repositoryadapter"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/infrastructure/repositoryport"
+)
+
+var Provider = wire.NewSet(
+	clientport.Provider,
+	clientadapter.Provider,
+	publisherport.Provider,
+	publisheradapter.Provider,
+	repositoryport.Provider,
+	repositoryadapter.Provider,
+	converter.Provider,
+)

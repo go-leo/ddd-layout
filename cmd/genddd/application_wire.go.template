@@ -1,0 +1,13 @@
+package application
+
+import (
+	"github.com/google/wire"
+
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/application/command"
+	"{{ .ModuleName }}/internal/app/{{ .AppPath }}/application/query"
+)
+
+var Provider = wire.NewSet(
+	command.Provider,
+	query.Provider,
+)
