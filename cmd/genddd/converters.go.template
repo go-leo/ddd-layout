@@ -1,0 +1,8 @@
+package converter
+
+type Converters struct {
+}
+
+func NewConverters() *Converters {
+	return &Converters{}
+}

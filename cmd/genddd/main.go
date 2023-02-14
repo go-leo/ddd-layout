@@ -45,6 +45,18 @@ var applicationContent string
 //go:embed infrastructure_wire.go.template
 var infrastructureContent string
 
+//go:embed assemblers.go.template
+var assemblersContent string
+
+//go:embed assembler_wire.go.template
+var assemblerContent string
+
+//go:embed converters.go.template
+var convertersContent string
+
+//go:embed converter_wire.go.template
+var converterContent string
+
 func main() {
 	flag.Parse()
 	if stringx.IsBlank(*moduleName) {
@@ -68,7 +80,8 @@ func main() {
 		newSource(path.Join("internal/app", *appPath, "presentation", "bus"), busContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "presentation", "bus"), busCommandsContent, "commands.go"),
 		newSource(path.Join("internal/app", *appPath, "presentation", "bus"), busQueriesContent, "queries.go"),
-		newSource(path.Join("internal/app", *appPath, "presentation", "assembler"), sampleWireContent, "wire.go"),
+		newSource(path.Join("internal/app", *appPath, "presentation", "assembler"), assemblerContent, "wire.go"),
+		newSource(path.Join("internal/app", *appPath, "presentation", "assembler"), assemblersContent, "assemblers.go"),
 		newSource(path.Join("internal/app", *appPath, "presentation", "console"), sampleWireContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "presentation", "controller"), sampleWireContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "presentation", "provider"), sampleWireContent, "wire.go"),
@@ -84,7 +97,8 @@ func main() {
 		newSource(path.Join("internal/app", *appPath, "infrastructure"), infrastructureContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "infrastructure", "clientadapter"), sampleWireContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "infrastructure", "clientport"), sampleWireContent, "wire.go"),
-		newSource(path.Join("internal/app", *appPath, "infrastructure", "converter"), sampleWireContent, "wire.go"),
+		newSource(path.Join("internal/app", *appPath, "infrastructure", "converter"), converterContent, "wire.go"),
+		newSource(path.Join("internal/app", *appPath, "infrastructure", "converter"), convertersContent, "converters.go"),
 		newSource(path.Join("internal/app", *appPath, "infrastructure", "publisheradapter"), sampleWireContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "infrastructure", "publisherport"), sampleWireContent, "wire.go"),
 		newSource(path.Join("internal/app", *appPath, "infrastructure", "repositoryadapter"), sampleWireContent, "wire.go"),
